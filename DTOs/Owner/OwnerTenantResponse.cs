@@ -1,8 +1,8 @@
 using SaaSEventos.Models.Enums;
 
-namespace SaaSEventos.DTOs.Tenants;
+namespace SaaSEventos.DTOs.Owner;
 
-public class TenantResponse
+public class OwnerTenantResponse
 {
     public int Id { get; set; }
     public string Name { get; set; } = string.Empty;

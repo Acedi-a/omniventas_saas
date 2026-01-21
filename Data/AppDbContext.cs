@@ -9,6 +9,7 @@ public class AppDbContext : DbContext
     {
     }
 
+    public DbSet<Account> Accounts => Set<Account>();
     public DbSet<Tenant> Tenants => Set<Tenant>();
     public DbSet<User> Users => Set<User>();
     public DbSet<Product> Products => Set<Product>();
@@ -17,13 +18,18 @@ public class AppDbContext : DbContext
     public DbSet<OrderItem> OrderItems => Set<OrderItem>();
     public DbSet<Ticket> Tickets => Set<Ticket>();
     public DbSet<Coupon> Coupons => Set<Coupon>();
+    public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
+    public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
+        modelBuilder.Entity<Account>().HasIndex(a => a.Email).IsUnique();
         modelBuilder.Entity<Tenant>().HasIndex(t => t.ApiKey).IsUnique();
+        modelBuilder.Entity<Tenant>().HasIndex(t => t.Slug).IsUnique();
         modelBuilder.Entity<User>().HasIndex(u => new { u.TenantId, u.Email }).IsUnique();
+        modelBuilder.Entity<PasswordResetToken>().HasIndex(t => t.Token).IsUnique();
         modelBuilder.Entity<Product>().HasIndex(p => p.TenantId);
         modelBuilder.Entity<Event>().HasIndex(e => e.TenantId);
         modelBuilder.Entity<Order>().HasIndex(o => new { o.TenantId, o.UserId });

@@ -60,6 +60,7 @@ public class ProductsController : ControllerBase
     }
 
     [HttpPut("{id:int}")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> UpdateProduct(int id, UpdateProductRequest request)
     {
         if (!TryGetTenantId(out var tenantId))
@@ -77,6 +78,7 @@ public class ProductsController : ControllerBase
     }
 
     [HttpDelete("{id:int}")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> DeleteProduct(int id)
     {
         if (!TryGetTenantId(out var tenantId))

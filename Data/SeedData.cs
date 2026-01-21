@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using SaaSEventos.Helpers;
 using SaaSEventos.Models;
 using SaaSEventos.Models.Enums;
 
@@ -23,13 +24,30 @@ public static class SeedData
 
             await db.SaveChangesAsync();
         }
+        var platformAccount = await db.Accounts.FirstOrDefaultAsync(a => a.Email == "owner@saaseventos.local");
+        if (platformAccount == null)
+        {
+            platformAccount = new Account
+            {
+                Name = "Owner Demo",
+                Email = "owner@saaseventos.local",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("Owner123!"),
+                CreatedAt = now
+            };
+
+            db.Accounts.Add(platformAccount);
+            await db.SaveChangesAsync();
+        }
+
         var platformTenant = await db.Tenants.FirstOrDefaultAsync(t => t.Name == "SaaS Platform");
 
         if (platformTenant == null)
         {
             platformTenant = new Tenant
             {
+                AccountId = platformAccount.Id,
                 Name = "SaaS Platform",
+                Slug = "saas-platform",
                 ApiKey = $"tn_live_{Guid.NewGuid():N}",
                 BusinessType = BusinessType.Hybrid,
                 IsActive = true,
@@ -66,7 +84,9 @@ public static class SeedData
         {
             new Tenant
             {
+                AccountId = platformAccount.Id,
                 Name = "Vinos Aranjuez",
+                Slug = "vinos-aranjuez",
                 ApiKey = $"tn_live_{Guid.NewGuid():N}",
                 BusinessType = BusinessType.Commerce,
                 IsActive = true,
@@ -74,7 +94,9 @@ public static class SeedData
             },
             new Tenant
             {
+                AccountId = platformAccount.Id,
                 Name = "Teatro Municipal",
+                Slug = "teatro-municipal",
                 ApiKey = $"tn_live_{Guid.NewGuid():N}",
                 BusinessType = BusinessType.Events,
                 IsActive = true,
@@ -158,5 +180,36 @@ public static class SeedData
         db.Events.AddRange(events);
         db.Coupons.AddRange(coupons);
         await db.SaveChangesAsync();
+
+        var tenantsWithoutSlug = await db.Tenants
+            .Where(t => string.IsNullOrWhiteSpace(t.Slug))
+            .OrderBy(t => t.Id)
+            .ToListAsync();
+        if (tenantsWithoutSlug.Count > 0)
+        {
+            var existingSlugs = await db.Tenants
+                .Where(t => !string.IsNullOrWhiteSpace(t.Slug))
+                .Select(t => t.Slug)
+                .ToListAsync();
+            var used = new HashSet<string>(existingSlugs);
+
+            foreach (var tenant in tenantsWithoutSlug)
+            {
+                var baseSlug = SlugHelper.Generate(tenant.Name);
+                var slug = baseSlug;
+                var counter = 1;
+
+                while (used.Contains(slug))
+                {
+                    counter++;
+                    slug = $"{baseSlug}-{counter}";
+                }
+
+                tenant.Slug = slug;
+                used.Add(slug);
+            }
+
+            await db.SaveChangesAsync();
+        }
     }
 }

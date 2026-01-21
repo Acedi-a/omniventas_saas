@@ -60,6 +60,7 @@ public class EventsController : ControllerBase
     }
 
     [HttpPut("{id:int}")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> UpdateEvent(int id, UpdateEventRequest request)
     {
         if (!TryGetTenantId(out var tenantId))
@@ -77,6 +78,7 @@ public class EventsController : ControllerBase
     }
 
     [HttpDelete("{id:int}")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> DeleteEvent(int id)
     {
         if (!TryGetTenantId(out var tenantId))

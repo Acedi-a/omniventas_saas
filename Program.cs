@@ -1,7 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.RateLimiting;
 using SaaSEventos.Data;
+using SaaSEventos.Middleware;
 using SaaSEventos.Services;
 using Scalar.AspNetCore;
 using System.Text;
@@ -24,7 +26,12 @@ builder.Services.AddCors(options =>
 });
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<AdminAuthService>();
+builder.Services.AddScoped<OwnerAuthService>();
+builder.Services.AddScoped<OwnerTenantService>();
+builder.Services.AddScoped<OwnerUserService>();
 builder.Services.AddScoped<ClientAuthService>();
+builder.Services.AddScoped<TenantAuthService>();
+builder.Services.AddScoped<TenantOrdersService>();
 builder.Services.AddScoped<TenantService>();
 builder.Services.AddScoped<ProductService>();
 builder.Services.AddScoped<EventService>();
@@ -33,6 +40,9 @@ builder.Services.AddScoped<OrderService>();
 builder.Services.AddScoped<TicketService>();
 builder.Services.AddScoped<AnalyticsService>();
 builder.Services.AddScoped<AdminHealthService>();
+builder.Services.AddScoped<AuditService>();
+builder.Services.AddScoped<AuditQueryService>();
+builder.Services.AddScoped<PasswordResetService>();
 
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 var jwtSecret = jwtSettings.GetValue<string>("Secret");
@@ -53,6 +63,16 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 
 builder.Services.AddAuthorization();
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddFixedWindowLimiter("auth", limiterOptions =>
+    {
+        limiterOptions.PermitLimit = 10;
+        limiterOptions.Window = TimeSpan.FromMinutes(1);
+        limiterOptions.QueueProcessingOrder = System.Threading.RateLimiting.QueueProcessingOrder.OldestFirst;
+        limiterOptions.QueueLimit = 0;
+    });
+});
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
@@ -67,10 +87,16 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseMiddleware<ExceptionMiddleware>();
+
+app.UseStaticFiles();
+
 app.UseCors("WebClient");
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseRateLimiter();
 
 app.MapControllers();
 

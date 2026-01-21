@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using SaaSEventos.DTOs.Admin;
 using SaaSEventos.Services;
 
@@ -16,6 +17,7 @@ public class AdminAuthController : ControllerBase
     }
 
     [HttpPost("login")]
+    [EnableRateLimiting("auth")]
     public async Task<IActionResult> Login(AdminLoginRequest request)
     {
         try

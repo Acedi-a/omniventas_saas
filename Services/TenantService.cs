@@ -4,23 +4,28 @@ using SaaSEventos.DTOs.Admin;
 using SaaSEventos.DTOs.Tenants;
 using SaaSEventos.Models.Enums;
 using SaaSEventos.Models;
+using SaaSEventos.Helpers;
 
 namespace SaaSEventos.Services;
 
 public class TenantService
 {
     private readonly AppDbContext _db;
+    private readonly AuditService _auditService;
 
-    public TenantService(AppDbContext db)
+    public TenantService(AppDbContext db, AuditService auditService)
     {
         _db = db;
+        _auditService = auditService;
     }
 
     public async Task<TenantResponse> CreateTenantAsync(CreateTenantRequest request)
     {
+        var slug = await GenerateUniqueSlugAsync(request.Name);
         var tenant = new Tenant
         {
             Name = request.Name,
+            Slug = slug,
             BusinessType = request.BusinessType,
             ApiKey = $"tn_live_{Guid.NewGuid():N}",
             IsActive = true,
@@ -30,10 +35,13 @@ public class TenantService
         _db.Tenants.Add(tenant);
         await _db.SaveChangesAsync();
 
+        await _auditService.LogAsync("admin.tenant.created", tenantId: tenant.Id);
+
         return new TenantResponse
         {
             Id = tenant.Id,
             Name = tenant.Name,
+            Slug = tenant.Slug,
             ApiKey = tenant.ApiKey,
             BusinessType = tenant.BusinessType,
             IsActive = tenant.IsActive,
@@ -49,6 +57,7 @@ public class TenantService
             {
                 Id = t.Id,
                 Name = t.Name,
+                Slug = t.Slug,
                 ApiKey = t.ApiKey,
                 BusinessType = t.BusinessType,
                 IsActive = t.IsActive,
@@ -65,6 +74,7 @@ public class TenantService
             {
                 Id = t.Id,
                 Name = t.Name,
+                Slug = t.Slug,
                 ApiKey = t.ApiKey,
                 BusinessType = t.BusinessType,
                 IsActive = t.IsActive,
@@ -401,6 +411,8 @@ public class TenantService
         tenant.IsActive = isActive;
         await _db.SaveChangesAsync();
 
+        await _auditService.LogAsync("admin.tenant.status", tenantId: tenant.Id, metadata: isActive ? "active" : "inactive");
+
         return new TenantResponse
         {
             Id = tenant.Id,
@@ -422,6 +434,8 @@ public class TenantService
 
         tenant.ApiKey = $"tn_live_{Guid.NewGuid():N}";
         await _db.SaveChangesAsync();
+
+        await _auditService.LogAsync("admin.tenant.regen_api_key", tenantId: tenant.Id);
 
         return new TenantResponse
         {
@@ -517,6 +531,7 @@ public class TenantService
         {
             Id = t.Id,
             Name = t.Name,
+            Slug = t.Slug,
             ApiKey = t.ApiKey,
             BusinessType = t.BusinessType,
             IsActive = t.IsActive,
@@ -544,5 +559,20 @@ public class TenantService
 
             item.LastActivityAt = activityDates.Count == 0 ? null : activityDates.Max();
         }
+    }
+
+    private async Task<string> GenerateUniqueSlugAsync(string name)
+    {
+        var baseSlug = SlugHelper.Generate(name);
+        var slug = baseSlug;
+        var counter = 1;
+
+        while (await _db.Tenants.AnyAsync(t => t.Slug == slug))
+        {
+            counter++;
+            slug = $"{baseSlug}-{counter}";
+        }
+
+        return slug;
     }
 }

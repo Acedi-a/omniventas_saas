@@ -12,10 +12,12 @@ public class AdminAuthService
 {
     private readonly AppDbContext _db;
     private readonly JwtHelper _jwtHelper;
+    private readonly AuditService _auditService;
 
-    public AdminAuthService(AppDbContext db, IConfiguration configuration)
+    public AdminAuthService(AppDbContext db, IConfiguration configuration, AuditService auditService)
     {
         _db = db;
+        _auditService = auditService;
 
         var jwtSection = configuration.GetSection("Jwt");
         var secret = jwtSection.GetValue<string>("Secret") ?? string.Empty;
@@ -38,6 +40,8 @@ public class AdminAuthService
         }
 
         var token = _jwtHelper.GenerateToken(user);
+
+        await _auditService.LogAsync("admin.login", userId: user.Id, tenantId: user.TenantId);
 
         return new LoginResponse
         {
