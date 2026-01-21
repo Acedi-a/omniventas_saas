@@ -85,6 +85,29 @@ public static class SeedData
         db.Tenants.AddRange(tenants);
         await db.SaveChangesAsync();
 
+        var admins = new List<User>
+        {
+            new User
+            {
+                TenantId = tenants[0].Id,
+                Email = "admin@vinosaranjuez.local",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin123!"),
+                Role = UserRole.Admin,
+                CreatedAt = now
+            },
+            new User
+            {
+                TenantId = tenants[1].Id,
+                Email = "admin@teatromunicipal.local",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin123!"),
+                Role = UserRole.Admin,
+                CreatedAt = now
+            }
+        };
+
+        db.Users.AddRange(admins);
+        await db.SaveChangesAsync();
+
         var products = new List<Product>
         {
             new Product { TenantId = tenants[0].Id, Name = "Cabernet 2020", Description = "Red wine bottle", Price = 120m, Stock = 50, CreatedAt = now },

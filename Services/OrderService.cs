@@ -178,6 +178,24 @@ public class OrderService
             .ToListAsync();
     }
 
+    public async Task<List<TenantOrderSummaryResponse>> GetTenantOrdersAsync(int tenantId)
+    {
+        return await _db.Orders
+            .Include(o => o.User)
+            .Where(o => o.TenantId == tenantId)
+            .OrderByDescending(o => o.CreatedAt)
+            .Select(o => new TenantOrderSummaryResponse
+            {
+                Id = o.Id,
+                BuyerEmail = o.User.Email,
+                Total = o.Total,
+                Status = o.Status,
+                CreatedAt = o.CreatedAt,
+                PaidAt = o.PaidAt
+            })
+            .ToListAsync();
+    }
+
     public async Task<ConfirmPaymentResponse?> ConfirmPaymentAsync(int tenantId, int userId, int orderId)
     {
         var order = await _db.Orders

@@ -1,20 +1,22 @@
+using SaaSEventos.Models.Enums;
+
 namespace SaaSEventos.DTOs.Admin;
 
-public class TenantStatsResponse
+public class AdminTenantOverviewResponse
 {
-    public int TenantId { get; set; }
+    public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
+    public string ApiKey { get; set; } = string.Empty;
+    public BusinessType BusinessType { get; set; }
+    public bool IsActive { get; set; }
+    public DateTime CreatedAt { get; set; }
     public int UsersCount { get; set; }
-    public int ProductsCount { get; set; }
-    public int EventsCount { get; set; }
     public int OrdersCount { get; set; }
     public int PaidOrdersCount { get; set; }
-    public int PendingOrdersCount { get; set; }
-    public int CancelledOrdersCount { get; set; }
-    public int ActiveCouponsCount { get; set; }
+    public int OrdersLast30Days { get; set; }
     public decimal TotalSales { get; set; }
     public DateTime? LastOrderAt { get; set; }
-    public decimal? LastOrderTotal { get; set; }
     public DateTime? LastUserAt { get; set; }
     public DateTime? LastEventAt { get; set; }
+    public DateTime? LastActivityAt { get; set; }
 }

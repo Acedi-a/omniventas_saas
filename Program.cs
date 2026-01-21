@@ -24,6 +24,7 @@ builder.Services.AddCors(options =>
 });
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<AdminAuthService>();
+builder.Services.AddScoped<ClientAuthService>();
 builder.Services.AddScoped<TenantService>();
 builder.Services.AddScoped<ProductService>();
 builder.Services.AddScoped<EventService>();
@@ -31,6 +32,7 @@ builder.Services.AddScoped<CouponService>();
 builder.Services.AddScoped<OrderService>();
 builder.Services.AddScoped<TicketService>();
 builder.Services.AddScoped<AnalyticsService>();
+builder.Services.AddScoped<AdminHealthService>();
 
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 var jwtSecret = jwtSettings.GetValue<string>("Secret");

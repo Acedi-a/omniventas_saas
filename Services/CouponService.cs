@@ -40,6 +40,23 @@ public class CouponService
         };
     }
 
+    public async Task<List<CouponResponse>> GetCouponsAsync(int tenantId)
+    {
+        return await _db.Coupons
+            .Where(c => c.TenantId == tenantId)
+            .OrderByDescending(c => c.ExpiresAt)
+            .Select(c => new CouponResponse
+            {
+                Id = c.Id,
+                Code = c.Code,
+                DiscountPercentage = c.DiscountPercentage,
+                MaxUses = c.MaxUses,
+                CurrentUses = c.CurrentUses,
+                ExpiresAt = c.ExpiresAt
+            })
+            .ToListAsync();
+    }
+
     public async Task<ValidateCouponResponse> ValidateCouponAsync(int tenantId, string code)
     {
         var coupon = await _db.Coupons

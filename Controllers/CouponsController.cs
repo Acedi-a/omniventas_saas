@@ -30,6 +30,19 @@ public class CouponsController : ControllerBase
         return Ok(response);
     }
 
+    [HttpGet]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> GetCoupons()
+    {
+        if (!TryGetTenantId(out var tenantId))
+        {
+            return Unauthorized(new { error = "TenantId claim missing." });
+        }
+
+        var coupons = await _couponService.GetCouponsAsync(tenantId);
+        return Ok(coupons);
+    }
+
     [HttpPost("validate")]
     public async Task<IActionResult> ValidateCoupon(ValidateCouponRequest request)
     {

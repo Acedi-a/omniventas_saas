@@ -10,4 +10,9 @@ public class TenantSummaryResponse
     public int HybridTenants { get; set; }
     public int NewLast7Days { get; set; }
     public int NewLast30Days { get; set; }
+    public int ActiveLast30Days { get; set; }
+    public int PaidOrders { get; set; }
+    public int PendingOrders { get; set; }
+    public int CancelledOrders { get; set; }
+    public decimal TotalSales { get; set; }
 }
