@@ -1,0 +1,13 @@
+namespace SaaSEventos.DTOs.Admin;
+
+public class TenantSummaryResponse
+{
+    public int TotalTenants { get; set; }
+    public int ActiveTenants { get; set; }
+    public int InactiveTenants { get; set; }
+    public int CommerceTenants { get; set; }
+    public int EventsTenants { get; set; }
+    public int HybridTenants { get; set; }
+    public int NewLast7Days { get; set; }
+    public int NewLast30Days { get; set; }
+}

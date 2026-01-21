@@ -1,0 +1,9 @@
+using SaaSEventos.Models.Enums;
+
+namespace SaaSEventos.DTOs.Tenants;
+
+public class CreateTenantRequest
+{
+    public string Name { get; set; } = string.Empty;
+    public BusinessType BusinessType { get; set; }
+}
